@@ -50,7 +50,7 @@
       '<div class="scrim" id="scrim"></div>' +
       '<main class="main">' +
         '<header class="topbar">' +
-          '<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation"><span></span><span></span><span></span></button>' +
+          '<button class="icon-btn nav-toggle" id="menuBtn" aria-label="Index" title="Index">Index</button>' +
           '<div class="crumbs" id="crumbs"></div>' +
           '<div class="topbar-actions">' +
             '<button class="icon-btn toc-toggle" id="tocBtn" aria-label="On this page" title="On this page">TOC</button>' +
