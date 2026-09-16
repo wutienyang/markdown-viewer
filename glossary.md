@@ -1,0 +1,45 @@
+# Glossary — Data Engineering Design Patterns
+
+- **Anonymization** — irreversibly removing protected information (e.g. PII columns) from a dataset (Ch 7).
+- **Append-only table** — a table accepting only `INSERT`; reconstruction of deletes/updates is left to consumers (Ch 2).
+- **At-least-once delivery** — a delivery guarantee where a record may be processed more than once; pairs with deduplication/idempotency, not a substitute (Ch 3, 4).
+- **Backfilling** — (re)processing past data, triggered manually or automatically after an error; must be idempotent (Ch 1, 4).
+- **Bronze / Silver / Gold** — the Medallion architecture layers: raw data, cleansed/enriched data, business-ready data (Ch 1).
+- **Bucket** — a storage layout colocating high-cardinality records by a hashed key (Ch 8).
+- **Change Data Capture (CDC)** — continuously ingesting modified rows directly from the database commit log, supporting hard deletes (Ch 2).
+- **Checkpointing** — periodically saving a job's progress so it can resume without full reprocessing (Ch 3).
+- **Compaction** — merging many small files into fewer large ones to reduce metadata overhead and read I/O (Ch 2).
+- **Commit log** — an append-only database structure recording every row operation, read by CDC consumers (Ch 2).
+- **Constraints** — declarative rules (not-null, uniqueness, checks) enforced on data to block quality issues at write time (Ch 9).
+- **Data lineage** — tracking where a dataset/column/row came from and how it was transformed (Ch 10).
+- **Data observability** — the ability to monitor data health (flow, skew, lag, SLA) and alert before consumers notice (Ch 10).
+- **Data quality** — the correctness, completeness, and reliability of data relative to consumer expectations (Ch 9).
+- **Data replication** — moving data between same-type stores while preserving metadata (primary keys, offsets, order) (Ch 2).
+- **Dead-letter queue** — a side destination where failed/poison records are written for analysis instead of crashing the pipeline (Ch 3).
+- **Deduplication** — removing duplicate records from a dataset, typically within a time window (Ch 3).
+- **Delta column** — a column (e.g. ingestion time) used to identify rows added since the last incremental load (Ch 2).
+- **Denormalization** — combining tables to reduce joins at query time, trading storage and update consistency (Ch 8).
+- **Design pattern** — a predefined, customizable, reusable template for solving a recurring problem, with known consequences and shared vocabulary (Ch 1).
+- **Encryption** — transforming data so only authorized parties can read it; reversible, unlike anonymization (Ch 7).
+- **Exactly-once delivery** — an ideal where a record is processed exactly once; in practice achieved via idempotent sinks, not the pipeline alone (Ch 3, 4).
+- **Fan-in / fan-out** — converging multiple branches into one task, or splitting one branch into many (Ch 6).
+- **Idempotency** — the property that repeating an operation any number of times yields the same result as running it once (Ch 4).
+- **Incremental load** — ingesting only new parts of a dataset (delta column or time partition) rather than the whole set (Ch 2).
+- **Late data** — events arriving for an event-time window that has already been processed (Ch 3).
+- **Medallion architecture** — the Bronze/Silver/Gold layering by data maturity level (Ch 1).
+- **Normalization** — decomposing data into multiple related tables to isolate storage and reduce duplication (Ch 8).
+- **Partitioning** — dividing a dataset by rows (horizontal) or columns (vertical) to control storage layout and access (Ch 7, 8).
+- **PII (personally identifiable information)** — attributes that can identify a person, which security patterns protect/remove/replace (Ch 7).
+- **Pseudo-anonymization** — replacing protected information with reversible values (tokens/keys) so re-identification stays possible (Ch 7).
+- **Readiness marker** — a signal (flag file, commit log, convention) telling consumers a dataset is complete and safe to read (Ch 2).
+- **Reprocessing** — rerunning a pipeline over past data; see backfilling (Ch 1).
+- **Schema compatibility** — ensuring a schema change doesn't break downstream consumers (backward/forward compatible) (Ch 9).
+- **Schema registry** — a central store of schemas and their evolution/compatibility rules (Ch 9).
+- **Sessionization** — grouping a user's events into continuous activity sessions (Ch 5).
+- **Skew** — uneven data distribution across partitions/keys that slows parallel processing (Ch 10).
+- **SLA** — the agreed latency/freshness/availability expectation for a dataset (Ch 10).
+- **Slowly changing dimension** — a reference dimension whose attributes change occasionally, requiring versioning in joins (Ch 5).
+- **Small-files problem** — many tiny files degrading metadata operations and read performance; solved by compaction (Ch 2).
+- **Time travel** — the ability to query a dataset at a previous version (Delta Lake, Iceberg, BigQuery) (Ch 2).
+- **Watermark** — a streaming threshold after which a window is considered complete and no more late data is expected (Ch 3).
+- **Z-order** — a multi-dimensional sort that co-locates related values (e.g. by two columns) to speed up filtered reads (Ch 8).
