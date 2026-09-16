@@ -1,31 +1,44 @@
-# Data Engineering Design Patterns — Reader
+# markdown-viewer
 
-A styled, single-page markdown reader for **Data Engineering Design Patterns** by *Bartosz Konieczny* — 68 design patterns across 10 chapters.
+A static, styled markdown library served via GitHub Pages from the `viewer` branch.
 
-Served from the `viewer` branch via GitHub Pages:
-**https://wutienyang.github.io/markdown-viewer/**
+- **Hub** — https://wutienyang.github.io/markdown-viewer/
+- **Data Engineering Design Patterns** — https://wutienyang.github.io/markdown-viewer/data-engineering-design-patterns/
 
-## Features
+## Structure
 
-- Sidebar index of every document (overview, cheatsheet, patterns, glossary, 10 chapters)
-- Auto-generated "On this page" table of contents for each document
-- Client-side rendering with syntax-highlighted code blocks and styled tables
-- Live search/filter across the document index
-- Light / dark theme, deep-linkable URLs, prev/next navigation, mobile responsive
+```
+index.html                              hub: lists every book
+assets/
+  app.js                                shared reader (config-driven)
+  style.css                             shared theme
+  vendor/                               marked + highlight.js (self-hosted)
+<book>/
+  index.html                            thin shell: defines window.BOOK_CONFIG
+  *.md + chapters/*.md                  the documents
+```
 
-## Files
+## Adding a book
 
-| Path | Purpose |
-|---|---|
-| `index.html` | Viewer shell |
-| `assets/app.js` | Rendering, routing, navigation |
-| `assets/style.css` | Theme and layout |
-| `assets/vendor/` | `marked` + `highlight.js` (self-hosted, no CDN) |
-| `SKILL.md` | Book overview & core frameworks |
-| `cheatsheet.md` | Decision rules & trade-offs |
-| `patterns.md` | All 68 design patterns |
-| `glossary.md` | Key terms |
-| `chapters/ch01–ch10` | Per-chapter summaries |
+1. Create a folder, e.g. `my-book/`.
+2. Drop the `.md` files inside.
+3. Copy `index.html` from an existing book and edit `window.BOOK_CONFIG`:
 
-The markdown files are the source of truth — update them and the reader reflects the change
-immediately (no build step). The book content here is synthesized summaries, not the original text.
+```js
+window.BOOK_CONFIG = {
+  title: "My Book",
+  subtitle: "Author",
+  meta: "optional footer text",
+  source: "https://github.com/...",
+  base: ".",
+  docs: [
+    { path: "intro.md", title: "Introduction", group: "Overview" },
+    { path: "ch/ch01.md", title: "Chapter One", num: "1", group: "Chapters" }
+  ]
+};
+```
+
+4. Add a card to the root `index.html` linking to `my-book/`.
+
+The markdown files are the source of truth — no build step. Content here is synthesized
+summaries, not original text.

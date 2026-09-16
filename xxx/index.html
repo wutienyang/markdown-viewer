@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xxx — Reader</title>
+  <link rel="stylesheet" href="../assets/vendor/github-dark.min.css" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <script>
+    window.BOOK_CONFIG = {
+      title: "xxx",
+      subtitle: "Sample document",
+      meta: "placeholder",
+      source: "https://github.com/wutienyang/markdown-viewer",
+      base: ".",
+      docs: [
+        { path: "intro.md", title: "Introduction", desc: "Getting started", group: "Overview" },
+        { path: "chapter-1.md", title: "Chapter One", num: "1", group: "Chapters" }
+      ]
+    };
+  </script>
+  <script src="../assets/vendor/marked.min.js"></script>
+  <script src="../assets/vendor/highlight.min.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

@@ -1,30 +1,89 @@
-/* Data Engineering Design Patterns — Reader app */
+/* Generic markdown reader — driven by window.BOOK_CONFIG
+ *
+ * window.BOOK_CONFIG = {
+ *   title:    "Book Title",
+ *   subtitle: "Author",
+ *   meta:     "small footer text",        // optional
+ *   source:   "https://...",              // optional link in footer
+ *   base:     ".",                        // prefix for fetching docs
+ *   docs: [
+ *     { path: "intro.md", title: "Overview", desc: "...", group: "Overview" },
+ *     { path: "ch/ch01.md", title: "Ch 1", num: "1", group: "Chapters" }
+ *   ]
+ * };
+ */
 
 (function () {
   "use strict";
 
-  /* ---------- Document manifest ---------- */
-  var DOCS = [
-    { path: "SKILL.md", title: "Overview", desc: "Core frameworks & mental models", group: "Overview" },
-    { path: "cheatsheet.md", title: "Cheatsheet", desc: "Decision rules & trade-offs", group: "Reference" },
-    { path: "patterns.md", title: "Patterns", desc: "All 68 design patterns", group: "Reference" },
-    { path: "glossary.md", title: "Glossary", desc: "Key terms & definitions", group: "Reference" },
-    { path: "chapters/ch01-introducing-design-patterns.md", title: "Introducing Data Engineering Design Patterns", num: "1", group: "Chapters" },
-    { path: "chapters/ch02-data-ingestion.md", title: "Data Ingestion Design Patterns", num: "2", group: "Chapters" },
-    { path: "chapters/ch03-error-management.md", title: "Error Management Design Patterns", num: "3", group: "Chapters" },
-    { path: "chapters/ch04-idempotency.md", title: "Idempotency Design Patterns", num: "4", group: "Chapters" },
-    { path: "chapters/ch05-data-value.md", title: "Data Value Design Patterns", num: "5", group: "Chapters" },
-    { path: "chapters/ch06-data-flow.md", title: "Data Flow Design Patterns", num: "6", group: "Chapters" },
-    { path: "chapters/ch07-data-security.md", title: "Data Security Design Patterns", num: "7", group: "Chapters" },
-    { path: "chapters/ch08-data-storage.md", title: "Data Storage Design Patterns", num: "8", group: "Chapters" },
-    { path: "chapters/ch09-data-quality.md", title: "Data Quality Design Patterns", num: "9", group: "Chapters" },
-    { path: "chapters/ch10-data-observability.md", title: "Data Observability Design Patterns", num: "10", group: "Chapters" }
-  ];
+  var CFG = window.BOOK_CONFIG || { title: "Reader", docs: [] };
+  var DOCS = CFG.docs || [];
+  var DEFAULT_PATH = DOCS.length ? DOCS[0].path : null;
+  var BASE = CFG.base || ".";
 
   var byPath = {};
   DOCS.forEach(function (d) { byPath[d.path] = d; });
 
-  var DEFAULT_PATH = "SKILL.md";
+  /* ---------- Build shell ---------- */
+  var SHELL =
+    '<div class="app">' +
+      '<aside class="sidebar" id="sidebar">' +
+        '<div class="sidebar-brand">' +
+          '<div class="brand-mark">DE</div>' +
+          '<div class="brand-text">' +
+            '<span class="brand-title"></span>' +
+            '<span class="brand-sub"></span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="search-wrap">' +
+          '<input type="search" id="search" placeholder="Filter documents…" autocomplete="off" spellcheck="false" />' +
+        '</div>' +
+        '<nav class="nav" id="nav" aria-label="Documents"></nav>' +
+        '<div class="sidebar-foot">' +
+          '<span class="foot-meta"></span>' +
+          '<a class="foot-source" target="_blank" rel="noopener">Source</a>' +
+        '</div>' +
+      '</aside>' +
+      '<div class="scrim" id="scrim"></div>' +
+      '<main class="main">' +
+        '<header class="topbar">' +
+          '<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation"><span></span><span></span><span></span></button>' +
+          '<div class="crumbs" id="crumbs"></div>' +
+          '<div class="topbar-actions">' +
+            '<button class="icon-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme"></button>' +
+          '</div>' +
+        '</header>' +
+        '<div class="content-area">' +
+          '<article class="doc" id="doc"><div class="loading">Loading…</div></article>' +
+          '<aside class="toc" id="toc" aria-label="On this page"><div class="toc-title">On this page</div><nav id="tocNav"></nav></aside>' +
+        '</div>' +
+        '<footer class="doc-foot" id="docFoot"></footer>' +
+      '</main>' +
+    '</div>';
+
+  document.body.insertAdjacentHTML("beforeend", SHELL);
+
+  document.title = CFG.title + " — Reader";
+  var brandTitle = document.querySelector(".sidebar-brand .brand-title");
+  var brandSub = document.querySelector(".sidebar-brand .brand-sub");
+  var brandMark = document.querySelector(".brand-mark");
+  var footMeta = document.querySelector(".sidebar-foot .foot-meta");
+  var footSource = document.querySelector(".sidebar-foot .foot-source");
+  if (brandTitle) brandTitle.textContent = CFG.title || "Reader";
+  if (brandSub) brandSub.textContent = CFG.subtitle || "";
+  if (brandMark) brandMark.textContent = initials(CFG.title || "R");
+  if (footMeta) footMeta.textContent = CFG.meta || "";
+  if (footSource) {
+    if (CFG.source) { footSource.href = CFG.source; footSource.style.display = ""; }
+    else { footSource.style.display = "none"; }
+  }
+
+  function initials(t) {
+    var w = (t || "").trim().split(/\s+/).filter(Boolean);
+    if (!w.length) return "R";
+    var s = w.map(function (x) { return x.charAt(0); }).join("").toUpperCase();
+    return s.length > 2 ? s.slice(0, 2) : s;
+  }
 
   /* ---------- Elements ---------- */
   var navEl = document.getElementById("nav");
@@ -41,10 +100,7 @@
 
   /* ---------- Markdown setup ---------- */
   var slugify = function (text) {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\u00C0-\u024F\u4e00-\u9fff]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "section";
+    return text.toLowerCase().replace(/[^\w\u00C0-\u024F\u4e00-\u9fff]+/g, "-").replace(/^-+|-+$/g, "") || "section";
   };
 
   var renderer = new marked.Renderer();
@@ -90,40 +146,31 @@
     return '<a href="' + href + '"' + (title ? ' title="' + title + '"' : "") + target + ">" + text + "</a>";
   };
 
-  marked.setOptions({
-    renderer: renderer,
-    gfm: true,
-    breaks: false
-  });
+  marked.setOptions({ renderer: renderer, gfm: true, breaks: false });
 
+  /* ---------- Rendering ---------- */
   var stripFrontmatter = function (raw) {
     var m = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/);
     return m ? raw.slice(m[0].length) : raw;
   };
 
-  /* ---------- Rendering ---------- */
   var render = function (path, raw) {
     currentPath = path;
     docEl.innerHTML = marked.parse(stripFrontmatter(raw));
-
     docEl.querySelectorAll("pre code").forEach(function (block) {
       try { hljs.highlightElement(block); } catch (e) {}
     });
-
     buildToc();
     updateCrumb(path);
     updateFoot(path);
     updateSidebarActive(path);
-    if (window.scrollY > 0 || !location.hash) window.scrollTo(0, 0);
+    if (window.scrollY > 0) window.scrollTo(0, 0);
   };
 
   var buildToc = function () {
     var heads = docEl.querySelectorAll("h2, h3");
     tocNav.innerHTML = "";
-    if (!heads.length) {
-      tocEl.style.display = "none";
-      return;
-    }
+    if (!heads.length) { tocEl.style.display = "none"; return; }
     tocEl.style.display = "";
     heads.forEach(function (h) {
       var a = document.createElement("a");
@@ -167,13 +214,13 @@
     crumbsEl.innerHTML = "";
     if (!d) { crumbsEl.textContent = ""; return; }
     var home = document.createElement("span");
-    home.textContent = "Reader";
+    home.textContent = CFG.title || "Reader";
     crumbsEl.appendChild(home);
     var sep = document.createElement("span");
     sep.textContent = "/";
     crumbsEl.appendChild(sep);
     var b = document.createElement("b");
-    b.textContent = d.group === "Chapters" ? "Chapter " + d.num : d.title;
+    b.textContent = d.group === "Chapters" && d.num ? "Chapter " + d.num : d.title;
     crumbsEl.appendChild(b);
   };
 
@@ -191,20 +238,18 @@
     a.className = "foot-link " + dir;
     if (!d) { a.className += " disabled"; a.innerHTML = '<span class="dir">&nbsp;</span>'; return a; }
     a.href = "#/" + d.path;
-    var dirLabel = dir === "prev" ? "← Previous" : "Next →";
-    var label = d.group === "Chapters" ? "Ch " + d.num + " · " + d.title : d.title;
-    a.innerHTML = '<span class="dir">' + dirLabel + '</span><span class="label">' + label + "</span>";
+    var label = d.group === "Chapters" && d.num ? "Ch " + d.num + " · " + d.title : d.title;
+    a.innerHTML = '<span class="dir">' + (dir === "prev" ? "← Previous" : "Next →") + '</span><span class="label">' + label + "</span>";
     return a;
   };
 
   /* ---------- Sidebar ---------- */
   var buildNav = function (filter) {
     navEl.innerHTML = "";
-    var groups = ["Overview", "Reference", "Chapters"];
-    groups.forEach(function (g) {
-      var items = DOCS.filter(function (d) {
-        return d.group === g && (!filter || matches(d, filter));
-      });
+    var seen = {};
+    DOCS.forEach(function (d) { seen[d.group] = true; });
+    Object.keys(seen).forEach(function (g) {
+      var items = DOCS.filter(function (d) { return d.group === g && (!filter || matches(d, filter)); });
       if (!items.length) return;
       var wrap = document.createElement("div");
       wrap.className = "nav-group";
@@ -218,7 +263,7 @@
         a.href = "#/" + d.path;
         a.dataset.path = d.path;
         var t = document.createElement("span");
-        t.textContent = d.group === "Chapters" ? d.title : d.title;
+        t.textContent = d.title;
         a.appendChild(t);
         if (d.num) {
           var chip = document.createElement("span");
@@ -236,8 +281,7 @@
 
   var matches = function (d, q) {
     q = q.toLowerCase();
-    var hay = (d.title + " " + d.desc + " " + d.path).toLowerCase();
-    return hay.indexOf(q) >= 0;
+    return (d.title + " " + d.desc + " " + d.path).toLowerCase().indexOf(q) >= 0;
   };
 
   var updateSidebarActive = function (path) {
@@ -256,14 +300,13 @@
       h = sp[0];
       anchor = sp[1];
     }
-    if (!h) return { path: DEFAULT_PATH, anchor: null };
-    if (!byPath[h]) return { path: DEFAULT_PATH, anchor: null };
+    if (!h || !byPath[h]) return { path: DEFAULT_PATH, anchor: null };
     return { path: h, anchor: anchor };
   };
 
   var load = function () {
     var r = parseHash();
-    fetch(r.path)
+    fetch(BASE + "/" + r.path)
       .then(function (res) {
         if (!res.ok) throw new Error("404 " + r.path);
         return res.text();
@@ -283,7 +326,7 @@
     closeSidebar();
   };
 
-  /* ---------- Global link interception (anchor + .md in rendered HTML) ---------- */
+  /* ---------- Anchor interception ---------- */
   document.addEventListener("click", function (e) {
     var a = e.target.closest("a");
     if (!a) return;
@@ -294,7 +337,6 @@
         el.scrollIntoView({ behavior: "smooth", block: "start" });
         history.replaceState(null, "", "#/" + currentPath + "@" + a.getAttribute("data-anchor"));
       }
-      return;
     }
   });
 
@@ -332,5 +374,6 @@
   try { savedTheme = localStorage.getItem("mdv-theme") || "light"; } catch (e) {}
   applyTheme(savedTheme);
   buildNav("");
-  load();
+  if (DEFAULT_PATH) load();
+  else docEl.innerHTML = "<h1>Empty</h1><p>No documents configured.</p>";
 })();
