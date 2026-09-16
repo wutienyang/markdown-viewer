@@ -53,6 +53,7 @@
           '<button class="menu-btn" id="menuBtn" aria-label="Toggle navigation"><span></span><span></span><span></span></button>' +
           '<div class="crumbs" id="crumbs"></div>' +
           '<div class="topbar-actions">' +
+            '<button class="icon-btn toc-toggle" id="tocBtn" aria-label="On this page" title="On this page">TOC</button>' +
             '<button class="icon-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme"></button>' +
           '</div>' +
         '</header>' +
@@ -105,6 +106,7 @@
   var scrimEl = document.getElementById("scrim");
   var menuBtn = document.getElementById("menuBtn");
   var themeBtn = document.getElementById("themeBtn");
+  var tocBtn = document.getElementById("tocBtn");
 
   /* ---------- Markdown setup ---------- */
   var slugify = function (text) {
@@ -191,6 +193,7 @@
         var t = document.getElementById(h.id);
         if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
         history.replaceState(null, "", "#/" + currentPath + "@" + h.id);
+        closeDrawers();
       });
       tocNav.appendChild(a);
     });
@@ -367,15 +370,25 @@
   });
 
   /* ---------- Mobile ---------- */
-  var closeSidebar = function () {
+  var closeDrawers = function () {
     sidebarEl.classList.remove("open");
+    tocEl.classList.remove("open");
     scrimEl.classList.remove("show");
   };
+  var closeSidebar = closeDrawers;
   menuBtn.addEventListener("click", function () {
     sidebarEl.classList.toggle("open");
-    scrimEl.classList.toggle("show");
+    tocEl.classList.remove("open");
+    if (sidebarEl.classList.contains("open") || tocEl.classList.contains("open")) scrimEl.classList.add("show");
+    else scrimEl.classList.remove("show");
   });
-  scrimEl.addEventListener("click", closeSidebar);
+  tocBtn.addEventListener("click", function () {
+    tocEl.classList.toggle("open");
+    sidebarEl.classList.remove("open");
+    if (sidebarEl.classList.contains("open") || tocEl.classList.contains("open")) scrimEl.classList.add("show");
+    else scrimEl.classList.remove("show");
+  });
+  scrimEl.addEventListener("click", closeDrawers);
 
   /* ---------- Init ---------- */
   var savedTheme = "light";
