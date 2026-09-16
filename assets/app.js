@@ -296,12 +296,6 @@
       }
       return;
     }
-    var href = a.getAttribute("href") || "";
-    if (href.charAt(0) === "#" && href.length > 2) {
-      e.preventDefault();
-      var r = parseHash();
-      load();
-    }
   });
 
   window.addEventListener("hashchange", load);
