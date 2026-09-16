@@ -144,6 +144,8 @@ body {
 }
 .sidebar-foot a { color: var(--link); text-decoration: none; }
 .sidebar-foot a:hover { text-decoration: underline; }
+.foot-links { display: flex; gap: 12px; align-items: center; }
+.foot-home { font-weight: 600; }
 
 /* ============ Main ============ */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }

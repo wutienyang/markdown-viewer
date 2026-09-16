@@ -41,7 +41,10 @@
         '<nav class="nav" id="nav" aria-label="Documents"></nav>' +
         '<div class="sidebar-foot">' +
           '<span class="foot-meta"></span>' +
-          '<a class="foot-source" target="_blank" rel="noopener">Source</a>' +
+          '<span class="foot-links">' +
+            '<a class="foot-home">Home</a>' +
+            '<a class="foot-source" target="_blank" rel="noopener">Source</a>' +
+          '</span>' +
         '</div>' +
       '</aside>' +
       '<div class="scrim" id="scrim"></div>' +
@@ -69,10 +72,15 @@
   var brandMark = document.querySelector(".brand-mark");
   var footMeta = document.querySelector(".sidebar-foot .foot-meta");
   var footSource = document.querySelector(".sidebar-foot .foot-source");
+  var footHome = document.querySelector(".sidebar-foot .foot-home");
   if (brandTitle) brandTitle.textContent = CFG.title || "Reader";
   if (brandSub) brandSub.textContent = CFG.subtitle || "";
   if (brandMark) brandMark.textContent = initials(CFG.title || "R");
   if (footMeta) footMeta.textContent = CFG.meta || "";
+  if (footHome) {
+    if (CFG.home) { footHome.href = CFG.home; }
+    else { footHome.style.display = "none"; }
+  }
   if (footSource) {
     if (CFG.source) { footSource.href = CFG.source; footSource.style.display = ""; }
     else { footSource.style.display = "none"; }
